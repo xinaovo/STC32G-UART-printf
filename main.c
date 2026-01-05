@@ -29,7 +29,7 @@ edata建议保留1K给堆栈使用，空间不够时可将大数组、不常用变量加xdata关键字定义到xd
 #include "stdio.h"
 
 //Master Clock Frequency
-#define MAIN_Fosc        12000000UL
+#define MAIN_Fosc        40000000UL		//40MHz
 
 /*****************************************************************************/
 
@@ -38,6 +38,7 @@ edata建议保留1K给堆栈使用，空间不够时可将大数组、不常用变量加xdata关键字定义到xd
 #define PrintUart     1        //1:printf 使用 UART1; 2:printf 使用 UART2
 
 unsigned char Data_Receive[5];
+unsigned long xdata count = 0;
 
 void delay_ms(unsigned int ms);
 
@@ -45,6 +46,7 @@ void delay_ms(unsigned int ms);
 void UartInit(void)
 {
 #if(PrintUart == 1)
+	S1_S1 = 0x2;	// UART1 -> TX:P1.7, RX:P1.6
 	SCON = (SCON & 0x3f) | 0x40; 
 	T1x12 = 1;          //定时器时钟1T模式
 	S1BRT = 0;          //串口1选择定时器1为波特率发生器
@@ -58,7 +60,7 @@ void UartInit(void)
 //	AUXR |= 0x15;   //串口1选择定时器2为波特率发生器
 #else
 	S2_S = 1;       //UART2 switch to: 0: P1.0 P1.1,  1: P4.6 P4.7
-    S2CFG |= 0x01;  //使用串口2时，W1位必需设置为1，否则可能会产生不可预期的错误
+  S2CFG |= 0x01;  //使用串口2时，W1位必需设置为1，否则可能会产生不可预期的错误
 	S2CON = (S2CON & 0x3f) | 0x40; 
 	T2L  = TM;
 	T2H  = TM>>8;
@@ -102,12 +104,12 @@ void main(void)
     P7M1 = 0x00;   P7M0 = 0x00;   //设置为准双向口
 
 	UartInit();
-
 	printf("STC32G UART Test.\r\n");
 
 	while(1)
     {
-        printf("OooooopsTeeeeeeeeest");
+        printf("OooooopsTeeeeeeeeest%u\r\n", count);
+				count++;
         delay_ms(1000); //delay 1s
     }
 }
